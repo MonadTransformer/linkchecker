@@ -6,7 +6,7 @@ import akka.cluster.{Cluster, ClusterEvent}
 
 import scala.concurrent.duration._
 
-class Main extends Actor {
+class MainActor extends Actor {
 
   import Receptionist._
 
@@ -14,28 +14,21 @@ class Main extends Actor {
   context.watch(receptionist) // sign death pact
 
   receptionist ! Get("http://example.org/")
-/*
+
+  receptionist ! Get("http://www.google.com/")
   receptionist ! Get("http://www.google.com/1")
   receptionist ! Get("http://www.google.com/2")
   receptionist ! Get("http://www.google.com/3")
-  receptionist ! Get("http://www.google.com/4")
-  receptionist ! Get("http://www.google.com")
-*/
 
   context.setReceiveTimeout(10.seconds)
 
   def receive = {
-    case Result(url, set)    =>
-      println(set.toVector.sorted.mkString(s"Results for '$url':\n", "\n", "\n"))
-    case Failed(url, reason) =>
-      println(s"Failed to fetch '$url': $reason\n")
-    case ReceiveTimeout      =>
-      context.stop(self)
+    case Result(url, set)    => println(set.mkString(s"Results for '$url':\n", "\n", "\n"))
+    case Failed(url, reason) => println(s"Failed to fetch '$url': $reason\n")
+    case ReceiveTimeout      => context.stop(self)
   }
 
-  override def postStop(): Unit = {
-    AsyncWebClient.shutdown()
-  }
+  override def postStop(): Unit = AsyncWebClient.shutdown()
 
 }
 

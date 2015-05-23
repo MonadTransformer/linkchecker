@@ -1,9 +1,11 @@
-package info.rkuhn.linkchecker
+package info.rkuhn
+package linkchecker
 
 import akka.actor.{Actor, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit}
 import org.scalatest.{BeforeAndAfterAll, WordSpecLike}
 
+import scala.collection.immutable.SortedSet
 import scala.concurrent.duration._
 
 object ReceptionistSpec {
@@ -19,7 +21,7 @@ object ReceptionistSpec {
 
     def receive = {
       case Controller.Check(url, depth) =>
-        context.system.scheduler.scheduleOnce(1.second, sender(), Controller.Result(Set(url)))
+        context.system.scheduler.scheduleOnce(1.second, sender(), Controller.Result(SortedSet(url)))
     }
   }
 
@@ -40,14 +42,14 @@ with WordSpecLike with BeforeAndAfterAll with ImplicitSender {
     "reply with a result" in {
       val receptionist = system.actorOf(fakeReceptionist, "sendResult")
       receptionist ! Get("myURL")
-      expectMsg(Result("myURL", Set("myURL")))
+      expectMsg(Result("myURL", SortedSet("myURL")))
     }
 
     "reject request flood" in {
       val receptionist = system.actorOf(fakeReceptionist, "rejectFlood")
       for (i <- 1 to 5) receptionist ! Get(s"myURL$i")
       expectMsg(Failed("myURL5", "queue overflow"))
-      for (i <- 1 to 4) expectMsg(Result(s"myURL$i", Set(s"myURL$i")))
+      for (i <- 1 to 4) expectMsg(Result(s"myURL$i", SortedSet(s"myURL$i")))
     }
 
   }

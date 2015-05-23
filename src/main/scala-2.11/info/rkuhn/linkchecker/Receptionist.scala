@@ -5,12 +5,13 @@ import akka.actor.{Actor, ActorRef, Address, Deploy, Props, ReceiveTimeout, Supe
 import akka.cluster.{Cluster, ClusterEvent}
 import akka.remote.RemoteScope
 
+import scala.collection.immutable.SortedSet
 import scala.concurrent.duration._
 import scala.util.Random
 
 object Receptionist {
   case class Get(url: String)
-  case class Result(url: String, links: Set[String])
+  case class Result(url: String, links: SortedSet[String])
   case class Failed(url: String, reason: String)
   private case class Job(client: ActorRef, url: String)
 }

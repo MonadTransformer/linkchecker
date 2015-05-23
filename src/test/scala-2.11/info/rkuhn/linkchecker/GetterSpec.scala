@@ -1,4 +1,5 @@
-package info.rkuhn.linkchecker
+package info.rkuhn
+package linkchecker
 
 import java.util.concurrent.Executor
 

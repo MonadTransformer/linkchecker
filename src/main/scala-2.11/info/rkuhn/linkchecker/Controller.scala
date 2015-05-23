@@ -3,11 +3,12 @@ package linkchecker
 
 import akka.actor.{Actor, ActorLogging, OneForOneStrategy, Props, ReceiveTimeout, SupervisorStrategy, Terminated}
 
+import scala.collection.immutable.SortedSet
 import scala.concurrent.duration._
 
 object Controller {
   case class Check(url: String, depth: Int)
-  case class Result(links: Set[String])
+  case class Result(links: SortedSet[String])
 
 }
 
@@ -19,7 +20,7 @@ class Controller extends Actor with ActorLogging {
     case _: Exception => SupervisorStrategy.Restart
   }
 
-  var cache = Set.empty[String]
+  var cache = SortedSet.empty[String]
 
   context.setReceiveTimeout(10.seconds)
 

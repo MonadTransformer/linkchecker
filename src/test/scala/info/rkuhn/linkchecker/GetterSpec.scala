@@ -1,22 +1,19 @@
 package info.rkuhn.linkchecker
 
-import akka.testkit.TestKit
-import akka.actor.ActorSystem
-import org.scalatest.WordSpecLike
-import scala.concurrent.Future
 import java.util.concurrent.Executor
-import org.scalatest.BeforeAndAfterAll
-import akka.testkit.ImplicitSender
-import akka.actor.Props
-import akka.actor.Actor
-import akka.actor.ActorRef
-import akka.actor.Terminated
+
+import akka.actor.{Actor, ActorRef, ActorSystem, Props, Terminated}
+import akka.testkit.{ImplicitSender, TestKit}
+import org.scalatest.{BeforeAndAfterAll, WordSpecLike}
+
+import scala.concurrent.Future
 
 class StepParent(child: Props, fwd: ActorRef) extends Actor {
   context.watch(context.actorOf(child, "child"))
+
   def receive = {
     case Terminated(_) => context.stop(self)
-    case msg           => fwd.tell(msg, sender)
+    case msg           => fwd.tell(msg, sender())
   }
 }
 
@@ -37,6 +34,11 @@ object GetterSpec {
   val links = Map(
     firstLink -> Seq("http://rkuhn.info/2"))
 
+  def fakeGetter(url: String, depth: Int): Props =
+    Props(new Getter(url, depth) {
+      override def client: WebClient = FakeWebClient
+    })
+
   object FakeWebClient extends WebClient {
     def get(url: String)(implicit exec: Executor): Future[String] =
       bodies get url match {
@@ -45,15 +47,10 @@ object GetterSpec {
       }
   }
 
-  def fakeGetter(url: String, depth: Int): Props =
-    Props(new Getter(url, depth) {
-      override def client = FakeWebClient
-    })
-
 }
 
 class GetterSpec extends TestKit(ActorSystem("GetterSpec"))
-  with WordSpecLike with BeforeAndAfterAll with ImplicitSender {
+with WordSpecLike with BeforeAndAfterAll with ImplicitSender {
 
   import GetterSpec._
 

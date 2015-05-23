@@ -1,7 +1,8 @@
-/bin
-.project
-.classpath
 .cache
-target/
+.classpath
+.idea/
+.project
 /.target
+/bin
 /lib_managed
+target/
